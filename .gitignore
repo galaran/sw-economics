@@ -1,0 +1,11 @@
+/.idea/
+*.iml
+
+/out/
+/*/out/
+/build/
+/*/build/
+
+/.gradle/
+
+Thumbs.db
