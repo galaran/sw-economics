@@ -1,5 +1,4 @@
 plugins {
-    application
     kotlin("jvm")
 }
 
@@ -7,11 +6,6 @@ sourceSets["main"].withConvention(org.jetbrains.kotlin.gradle.plugin.KotlinSourc
     kotlin.srcDir("src")
 }
 
-application {
-    mainClassName = "me.galaran.swe.overlay.SweOverlay"
-}
-
 dependencies {
-    compile(project(":swe-ocr"))
     compile(kotlin("stdlib"))
 }

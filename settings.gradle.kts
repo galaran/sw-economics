@@ -1,1 +1,1 @@
-include("swe-overlay", "swe-ocr")
+include("swe-capturer", "swe-overlay", "swe-ocr")
