@@ -1,6 +1,6 @@
-package me.galaran.swe.data
+package me.galaran.swe.data.download
 
-import me.galaran.swe.data.ImageDownloadResult.*
+import me.galaran.swe.data.download.ImageDownloadResult.*
 import java.io.InputStream
 import java.io.PrintWriter
 import java.net.URI

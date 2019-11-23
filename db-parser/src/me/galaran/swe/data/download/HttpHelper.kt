@@ -1,4 +1,4 @@
-package me.galaran.swe.data
+package me.galaran.swe.data.download
 
 import java.io.InputStream
 import java.net.http.HttpClient
