@@ -9,3 +9,5 @@
 /.gradle/
 
 Thumbs.db
+
+/db-parser/download/
