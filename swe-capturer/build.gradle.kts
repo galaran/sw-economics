@@ -15,6 +15,7 @@ application {
 
 dependencies {
     compile(kotlin("stdlib"))
+    compile(kotlin("reflect"))
     compile(project(":swe-ocr"))
     compile(project(":swe-overlay"))
 }

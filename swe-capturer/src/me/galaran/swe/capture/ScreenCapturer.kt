@@ -1,5 +1,9 @@
 package me.galaran.swe.capture
 
+import me.galaran.swe.capture.window.UnknownWindow
+import me.galaran.swe.capture.window.Window
+import me.galaran.swe.capture.window.WindowScanner
+import me.galaran.swe.overlay.OverlayRectangle
 import me.galaran.swe.overlay.SweOverlay
 import java.awt.Dimension
 import java.awt.Rectangle
@@ -18,13 +22,17 @@ object ScreenCapturer {
 
         val robot = Robot()
         while (true) {
-            SweOverlay.clearShapes()
+            SweOverlay.clear()
             val start = System.nanoTime()
 
             val screenshot: BufferedImage = robot.createScreenCapture(Rectangle(screenSize))
-            val windows: List<Window> = WindowScanner.scan(screenshot, FullImage)
+            val windows: List<UnknownWindow> = WindowScanner.findAt(screenshot, EntireImageWalker(screenshot.size))
 
-            windows.map { Rectangle(it.x - 10, it.y - 10, it.width + 20, it.height + 20) }.forEach(SweOverlay::addShape)
+            val detectedWindows: List<Window> = windows.map { Window.detectType(it) ?: it }
+
+            detectedWindows
+                .map { OverlayRectangle(it.xAtScreen - 10, it.yAtScreen - 10, it.width + 20, it.height + 20, it.frameColor, 3) }
+                .forEach(SweOverlay::addComponent)
 
             val end = System.nanoTime()
             if (SweOverlay.DEBUG) {
