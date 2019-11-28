@@ -25,6 +25,7 @@ object Win32ForegroundWindowCapturer {
         User32.INSTANCE.GetClientRect(windowHandle, windowBounds)
         val width = windowBounds.right - windowBounds.left
         val height = windowBounds.bottom - windowBounds.top
+        if (width <= 0 || height <= 0) return null
 
         val windowDC: WinDef.HDC = User32.INSTANCE.GetDC(windowHandle) ?: return null
         val bitmap: WinDef.HBITMAP = GDI32.INSTANCE.CreateCompatibleBitmap(windowDC, width, height)
