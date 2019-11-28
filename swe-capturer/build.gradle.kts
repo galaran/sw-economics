@@ -18,4 +18,6 @@ dependencies {
     compile(kotlin("reflect"))
     compile(project(":swe-ocr"))
     compile(project(":swe-overlay"))
+    implementation("net.java.dev.jna:jna:5.5.0")
+    implementation("net.java.dev.jna:jna-platform:5.5.0")
 }

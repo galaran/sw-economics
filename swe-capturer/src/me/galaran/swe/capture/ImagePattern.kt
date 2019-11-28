@@ -71,7 +71,7 @@ open class ImagePattern(val name: String) : ImageMatcher, ImageScanner<Point> {
             if (target.getRGB(firstX, firstY) != firstColor) return@walkToEnd
 
             currentPoint.move(x, y)
-            if (isAtImage(target, currentPoint, SweOverlay.TRACE)) {
+            if (isAtImage(target, currentPoint, ScreenCapturer.TRACE)) {
                 result += Point(x, y)
             }
         }

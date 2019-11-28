@@ -8,6 +8,8 @@ open class Point(open val x: Int, open val y: Int) {
 
     fun toAwt() = java.awt.Point(x, y)
 
+    override fun toString() = "Point(x=$x, y=$y)"
+
     companion object {
         val ZERO = Point(0, 0)
     }
@@ -28,6 +30,8 @@ class MutablePoint(override var x: Int, override var y: Int) : Point(x, y) {
         y += vector.y
         return this
     }
+
+    override fun toString() = "MutablePoint(x=$x, y=$y)"
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

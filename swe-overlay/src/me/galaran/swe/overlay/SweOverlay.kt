@@ -6,21 +6,17 @@ import javax.swing.JComponent
 
 object SweOverlay {
 
-    var DEBUG = true
-    var TRACE = true
-
     private val overlayComponents = ConcurrentLinkedQueue<OverlayComponent>()
 
-    private val screenSize: Dimension = Toolkit.getDefaultToolkit().screenSize
-
-    private val screenSurface = object : JComponent() {
+    private val drawSurface = object : JComponent() {
         override fun paintComponent(g: Graphics) = overlayComponents.forEach { it.drawOn(g as Graphics2D) }
-        override fun getPreferredSize() = screenSize
+        override fun getPreferredSize() = mainScreenSize
     }
+    private val mainScreenSize: Dimension = Toolkit.getDefaultToolkit().screenSize
 
     fun init() {
         val w = Window(null)
-        w.add(screenSurface)
+        w.add(drawSurface)
         w.pack()
         w.setLocationRelativeTo(null)
         w.isVisible = true
@@ -28,11 +24,20 @@ object SweOverlay {
         w.background = Color(0, 0, 0, 0)
     }
 
-    fun addComponent(component: OverlayComponent) {
-        overlayComponents += component
+    private var nowUpdating = false
+
+    fun <T> update(block: () -> T): T {
+        overlayComponents.clear()
+        nowUpdating = true
+        val result = block()
+        nowUpdating = false
+        drawSurface.repaint()
+        return result
     }
 
-    fun clear() = overlayComponents.clear()
-
-    fun update() = screenSurface.repaint()
+    fun addComponent(component: OverlayComponent) {
+        if (nowUpdating) {
+            overlayComponents += component
+        } else throw IllegalStateException()
+    }
 }

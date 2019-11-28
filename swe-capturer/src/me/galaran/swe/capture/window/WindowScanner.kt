@@ -1,7 +1,6 @@
 package me.galaran.swe.capture.window
 
 import me.galaran.swe.capture.*
-import me.galaran.swe.overlay.SweOverlay
 import java.awt.image.BufferedImage
 
 object WindowScanner : ImageScanner<Window> {
@@ -20,7 +19,7 @@ object WindowScanner : ImageScanner<Window> {
             val topLeft: Point? = windowTopLeft.findAt(target,
                 FromPointToDirectionWalker(target.size, header, WalkDirection.LEFT)).firstOrNull()
 
-            if (SweOverlay.TRACE) {
+            if (ScreenCapturer.TRACE) {
                 println("window> Header: $header | topLeft: $topLeft, topRight: $topRight")
             }
 
@@ -32,7 +31,7 @@ object WindowScanner : ImageScanner<Window> {
                         target.copySubimage(topLeft.x, topLeft.y, topRight.x - topLeft.x + 1, bottomLeft.y - topLeft.y + 1))
                 }
             } else {
-                if (SweOverlay.DEBUG) {
+                if (ScreenCapturer.DEBUG) {
                     windowTopLeft.isAtImage(target, Point(header.x - 255, header.y), true)
                     windowTopLeft.isAtImage(target, Point(header.x + 253, header.y), true)
                 }
