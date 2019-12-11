@@ -12,6 +12,14 @@ allprojects {
     }
 }
 
+subprojects {
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        kotlinOptions {
+            jvmTarget = "12"
+        }
+    }
+}
+
 dependencies {
     // Make the root project archives configuration depend on every subproject
     subprojects.forEach {
