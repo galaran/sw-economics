@@ -1,1 +1,1 @@
-include("swe-capturer", "swe-overlay", "swe-ocr", "db-parser")
+include("swe-app", "swe-data", "swe-data-downloader", "swe-data-parser")
