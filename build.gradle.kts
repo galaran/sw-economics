@@ -1,6 +1,7 @@
 plugins {
     base
     kotlin("jvm") version "1.3.61" apply false
+    kotlin("plugin.serialization") version "1.3.61" apply false
 }
 
 allprojects {
