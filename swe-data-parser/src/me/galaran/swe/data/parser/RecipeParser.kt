@@ -14,6 +14,8 @@ fun parseRecipe(lines: List<String>, target: Recipe) {
     when (lines.count { it == START_LINE }) {
         0 -> {
             target.isValid = false
+            target.chance = RecipeChance.PERCENT_100
+            target.productId = "<none>"
             return
         }
         1 -> start = lines.indexOf(START_LINE)
@@ -24,7 +26,7 @@ fun parseRecipe(lines: List<String>, target: Recipe) {
 
     val recipeMatch: MatchResult = RECIPE_REGEX.find(lines[start + 4])!!
     check(recipeMatch.groupValues[5] == target.id)
-    target.level = recipeMatch.groupValues[1].toInt()
+    target.craftLevel = recipeMatch.groupValues[1].toInt()
     target.productQuantity = recipeMatch.groupValues[2].toInt()
     target.chance = RecipeChance.byValue(recipeMatch.groupValues[3].toInt())
     target.mpUsage = recipeMatch.groupValues[4].toInt()

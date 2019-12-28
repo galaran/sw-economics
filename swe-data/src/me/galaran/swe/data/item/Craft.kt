@@ -1,18 +1,19 @@
 package me.galaran.swe.data.item
 
-import kotlin.properties.Delegates
+import kotlinx.serialization.Serializable
 
+@Serializable
 class Recipe : Item() {
 
     var isValid = true
 
-    var level by Delegates.notNull<Int>()
+    var craftLevel = Int.MIN_VALUE
     lateinit var chance: RecipeChance
-    var mpUsage by Delegates.notNull<Int>()
+    var mpUsage = Int.MIN_VALUE
 
     val components = mutableListOf<Pair<String, Int>>()
     lateinit var productId: String
-    var productQuantity by Delegates.notNull<Int>()
+    var productQuantity = Int.MIN_VALUE
 }
 
 enum class RecipeChance(private val value: Int) {
@@ -26,12 +27,12 @@ enum class RecipeChance(private val value: Int) {
     }
 }
 
+@Serializable
 class KeyPart : Item() {
-
-    lateinit var productId: String
+    var productId: String? = null
 }
 
+@Serializable
 class Resource : Item() {
-
-    var isBasic: Boolean by Delegates.notNull()
+    var isBasic = false
 }

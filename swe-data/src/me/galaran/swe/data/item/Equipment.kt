@@ -1,21 +1,26 @@
 package me.galaran.swe.data.item
 
-sealed class Equipment : Item() {
-    var crystals: Int? = null
+import kotlinx.serialization.Serializable
 
-    fun isCrystallizable() = crystals != null && crystals != CRYSTALS_UNKNOWN
+@Serializable
+sealed class Equipment : Item() {
+    var crystals: Int = CRYSTALS_NON_CRYSTALLIZABLE
+
+    fun isCrystallizable() = crystals > 0
 
     companion object {
-        const val CRYSTALS_UNKNOWN = -1
+        const val CRYSTALS_NON_CRYSTALLIZABLE = 0
+        const val CRYSTALS_INVALID = -1
     }
 }
 
+@Serializable
 class Weapon(val type: WeaponType) : Equipment() {
-//    var pAtk: Int by Delegates.notNull()
-//    var mAtk: Int by Delegates.notNull()
+//    var pAtk: Int
+//    var mAtk: Int
 
-//    var soulshotUsage: Int by Delegates.notNull()
-//    var spiritshotUsage: Int by Delegates.notNull()
+//    var soulshotUsage: Int
+//    var spiritshotUsage: Int
 }
 
 enum class WeaponType {
@@ -31,8 +36,9 @@ enum class WeaponType {
     //TWO_HANDED_SWORD
 }
 
+@Serializable
 class Armor(val type: ArmorType) : Equipment() {
-//    var pDef: Int by Delegates.notNull()
+//    var pDef: Int
 }
 
 enum class ArmorType {
@@ -47,8 +53,9 @@ enum class ArmorType {
     AUWEAR
 }
 
+@Serializable
 class Jewelry(val type: JewelryType) : Equipment() {
-//    var mDef: Int by Delegates.notNull()
+//    var mDef: Int
 }
 
 enum class JewelryType {

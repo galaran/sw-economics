@@ -15,7 +15,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.system.exitProcess
 
 private val DOWNLOAD_PATH = Paths.get("swe-data-downloader", "download")
-private val RESULT_DB_PATH = Paths.get("swe-data", "resources", "items.txt")
+private val RESULT_DB_PATH = Paths.get("swe-data", "resources", "items.json")
 
 fun main() {
     for (itemId in 1..ItemDb.MAX_ITEM_ID_INTERLUDE) {
@@ -34,6 +34,9 @@ fun main() {
     ItemDb.applyFixes()
 
     ItemDb.saveTo(RESULT_DB_PATH)
+    println(ItemDb.all().size)
+    ItemDb.loadFrom(RESULT_DB_PATH)
+    println(ItemDb.all().size)
 }
 
 val propertyKeys = LinkedHashSet<String>()
@@ -140,14 +143,14 @@ fun createTypedItem(properties: LinkedHashMap<String, String>, itemName: String,
         "wedding" -> UnclassifiedItem(type)
         "Рыба (fish)" -> UnclassifiedItem(type)
         "rod" -> UnclassifiedItem(type)
-        "" -> UnclassifiedItem("<empty>")
+        "" -> UnclassifiedItem("<none>")
         else -> throw IllegalArgumentException()
     }
 
     val itemClass: String? = properties["Класс"]
     if (itemClass == null) {
         result.grade = NOGRADE
-        if (result is Equipment) result.crystals = null
+        if (result is Equipment) result.crystals = Equipment.CRYSTALS_NON_CRYSTALLIZABLE
     } else {
         val classMatch: MatchResult = itemClassRegex.find(itemClass)!!
         val grade = classMatch.groupValues[1]
@@ -166,10 +169,10 @@ fun createTypedItem(properties: LinkedHashMap<String, String>, itemName: String,
 
         if (result is Equipment) {
             result.crystals = when {
-                result.grade == NOGRADE -> null
-                crystals == 0 -> null
-                itemName.startsWith("Shadow Weapon: ") -> null
-                crystals in 1..20 -> Equipment.CRYSTALS_UNKNOWN
+                result.grade == NOGRADE -> Equipment.CRYSTALS_NON_CRYSTALLIZABLE
+                crystals == 0 -> Equipment.CRYSTALS_NON_CRYSTALLIZABLE
+                itemName.startsWith("Shadow Weapon: ") -> Equipment.CRYSTALS_NON_CRYSTALLIZABLE
+                crystals in 1..20 -> Equipment.CRYSTALS_INVALID
                 else -> crystals
             }
         }

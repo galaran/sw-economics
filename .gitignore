@@ -11,3 +11,5 @@
 Thumbs.db
 
 /swe-data-downloader/download/
+/swe-data/resources/items.json
+/swe-data/resources/item-images/
