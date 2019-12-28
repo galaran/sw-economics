@@ -1,6 +1,7 @@
 package me.galaran.swe.data
 
 import me.galaran.swe.data.item.Item
+import java.nio.file.Path
 
 object ItemDb {
 
@@ -17,4 +18,18 @@ object ItemDb {
     }
 
     fun all(): List<Item> = list
+
+    fun saveTo(dbFile: Path) {
+
+    }
+
+    fun loadFrom(dbFile: Path) {
+        list.clear()
+        byId.clear()
+        byName.clear()
+    }
+
+    fun applyFixes() {
+
+    }
 }

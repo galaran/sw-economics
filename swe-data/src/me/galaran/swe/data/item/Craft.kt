@@ -4,21 +4,31 @@ import kotlin.properties.Delegates
 
 class Recipe : Item() {
 
-    val components = mutableListOf<Pair<Item, Int>>()
+    var isValid = true
 
-    lateinit var product: Item
-    var productQuantity = 1
-
+    var level by Delegates.notNull<Int>()
     lateinit var chance: RecipeChance
+    var mpUsage by Delegates.notNull<Int>()
+
+    val components = mutableListOf<Pair<String, Int>>()
+    lateinit var productId: String
+    var productQuantity by Delegates.notNull<Int>()
 }
 
-enum class RecipeChance {
-    PERCENT_100, PERCENT_70, PERCENT_60,
+enum class RecipeChance(private val value: Int) {
+    PERCENT_100(100),
+    PERCENT_70(70),
+    PERCENT_60(60),
+    PERCENT_25(25);
+
+    companion object {
+        fun byValue(value: Int): RecipeChance = values().find { it.value == value }!!
+    }
 }
 
 class KeyPart : Item() {
 
-    lateinit var product: Equipment
+    lateinit var productId: String
 }
 
 class Resource : Item() {

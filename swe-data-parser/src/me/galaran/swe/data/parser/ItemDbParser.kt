@@ -12,26 +12,28 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
+import kotlin.system.exitProcess
 
 private val DOWNLOAD_PATH = Paths.get("swe-data-downloader", "download")
+private val RESULT_DB_PATH = Paths.get("swe-data", "resources", "items.txt")
 
 fun main() {
     for (itemId in 1..ItemDb.MAX_ITEM_ID_INTERLUDE) {
-        val item: Item? = parseItem(itemId)
-        if (item != null) {
-            ItemDb.add(item)
+        try {
+            val item: Item? = parseItem(itemId)
+            if (item != null) {
+                ItemDb.add(item)
+            }
+        } catch (ex: Exception) {
+            System.err.println("Error parsing item #$itemId")
+            ex.printStackTrace()
+            exitProcess(1)
         }
     }
-    println("===================================================")
 
-    ItemDb.all().filterIsInstance<Jewelry>().forEach(::println)
+    ItemDb.applyFixes()
 
-    /*val json = Json(JsonConfiguration.Stable)
-    val jsonItem: String = json.stringify(Item.serializer(), item)
-    println(jsonItem)
-
-    val itemAgain: Item = json.parse(Item.serializer(), jsonItem)
-    println(itemAgain)*/
+    ItemDb.saveTo(RESULT_DB_PATH)
 }
 
 val propertyKeys = LinkedHashSet<String>()
@@ -64,24 +66,26 @@ fun parseItem(itemId: Int): Item? {
     val properties = parseProperties(lines)
 
     val itemWeight = properties["Вес"]!!.toInt()
-    val item = createTypedItem(properties, itemId, itemName, itemWeight)
+    val item = createTypedItem(properties, itemName, itemWeight)
 
-    if (item is Recipe) {
-        parseRecipe(lines, item)
-    }
-
-    return item.apply {
+    item.apply {
         id = itemId.toString()
         this.imageId = imageId
         name = itemName
         basePrice = properties["Базовая цена"]!!.toInt()
         weight = itemWeight
     }
+
+    if (item is Recipe) {
+        parseRecipe(lines, item)
+    }
+
+    return item
 }
 
 val itemClassRegex = """(\w{1,2})-grade \((\d{1,4})\)""".toRegex()
 
-fun createTypedItem(properties: LinkedHashMap<String, String>, itemId: Int, itemName: String, itemWeight: Int): Item {
+fun createTypedItem(properties: LinkedHashMap<String, String>, itemName: String, itemWeight: Int): Item {
     val result: Item = when (val type: String? = properties["Тип"]) {
         "Мечи (sword)" -> Weapon(SWORD)
         "Ударное (blunt)" -> Weapon(BLUNT)
@@ -165,10 +169,7 @@ fun createTypedItem(properties: LinkedHashMap<String, String>, itemId: Int, item
                 result.grade == NOGRADE -> null
                 crystals == 0 -> null
                 itemName.startsWith("Shadow Weapon: ") -> null
-                crystals in 1..20 -> {
-//                    println("#$itemId $itemName: $crystals cry")
-                    Equipment.CRYSTALS_UNKNOWN
-                }
+                crystals in 1..20 -> Equipment.CRYSTALS_UNKNOWN
                 else -> crystals
             }
         }
