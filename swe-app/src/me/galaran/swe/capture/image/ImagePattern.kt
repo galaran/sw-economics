@@ -13,14 +13,12 @@ private val CONTROL_POINT_EXACT_CROSS_COLOR: Int = Color(76, 255, 0).rgb
 private val CONTROL_POINT_APPROX_CROSS_COLOR: Int = Color(255, 216, 0).rgb
 private val CONTROL_IMAGE_RECTANGLE_COLOR: Int = Color(255, 0, 220).rgb
 
-private const val APPROX_RGB_MAX_DIFFERENCE = 2
-
-private interface ImageMatcher {
-    fun isAtImage(testImage: BufferedImage, zeroPointAtTestImage: Point,
-                  showDismatches: Boolean, dismatchesDisplayOffset: Point = Point.ZERO): Boolean
-}
+private const val APPROX_RGB_MAX_DIFFERENCE = 3
 
 open class ImagePattern(val name: String) : ImageMatcher, ImageScanner<Point> {
+
+    protected val patternImage: BufferedImage = ImageIO.read(ImagePattern::class.java.getResourceAsStream("/patterns/$name.png"))
+    protected val zeroPoint: Point
 
     private val controlPoints: List<ControlPoint>
     private val controlImages: List<ControlImage>
@@ -28,9 +26,25 @@ open class ImagePattern(val name: String) : ImageMatcher, ImageScanner<Point> {
     private val controls: List<ImageMatcher>
 
     init {
-        val patternImage = ImageIO.read(ImagePattern::class.java.getResourceAsStream("/patterns/$name.png"))
+        zeroPoint = findZeroPoint()
 
-        // Find zero point first
+        val controlPoints = mutableListOf<ControlPoint>()
+        EntireImageWalker(patternImage.size).walkToEnd { x, y ->
+            if (patternImage.isCrossAround(x, y, CONTROL_POINT_EXACT_CROSS_COLOR)) {
+                controlPoints += ControlPointExact(Point(x, y) - zeroPoint, Color(patternImage.getRGB(x, y)))
+            } else if (patternImage.isCrossAround(x, y, CONTROL_POINT_APPROX_CROSS_COLOR)) {
+                controlPoints += ControlPointApprox(Point(x, y) - zeroPoint, Color(patternImage.getRGB(x, y)))
+            }
+        }
+        this.controlPoints = controlPoints
+
+        controlImages = ImageRegionsFinder(CONTROL_IMAGE_RECTANGLE_COLOR).findAt(patternImage)
+            .map { ControlImage(Point(it.x, it.y) - zeroPoint, patternImage.copySubimage(it.x, it.y, it.width, it.height)) }
+
+        controls = ArrayList<ImageMatcher>(controlPoints).also { it += controlImages }
+    }
+
+    private fun findZeroPoint(): Point {
         var zeroPointX = -1
         var zeroPointY = -1
         EntireImageWalker(patternImage.size).walk { x, y ->
@@ -43,22 +57,7 @@ open class ImagePattern(val name: String) : ImageMatcher, ImageScanner<Point> {
             }
         }
         if (zeroPointX == -1 || zeroPointY == -1) throw IllegalStateException("No Zero point in pattern image $name")
-
-        val controlPoints = mutableListOf<ControlPoint>()
-        EntireImageWalker(patternImage.size).walkToEnd { x, y ->
-            if (patternImage.isCrossAround(x, y, CONTROL_POINT_EXACT_CROSS_COLOR)) {
-                controlPoints += ControlPointExact(Point(x - zeroPointX, y - zeroPointY), Color(patternImage.getRGB(x, y)))
-            } else if (patternImage.isCrossAround(x, y, CONTROL_POINT_APPROX_CROSS_COLOR)) {
-                controlPoints += ControlPointApprox(Point(x - zeroPointX, y - zeroPointY), Color(patternImage.getRGB(x, y)))
-            }
-        }
-        this.controlPoints = controlPoints
-
-        controlImages = ImageSubimageScanner(CONTROL_IMAGE_RECTANGLE_COLOR)
-            .findAt(patternImage, EntireImageWalker(patternImage.size))
-            .map { ControlImage(Point(it.x - zeroPointX, it.y - zeroPointY), patternImage.copySubimage(it.x, it.y, it.width, it.height)) }
-
-        controls = ArrayList<ImageMatcher>(controlPoints).also { it += controlImages }
+        return Point(zeroPointX, zeroPointY)
     }
 
     /** @return zero points of found patterns at target image*/
@@ -75,7 +74,7 @@ open class ImagePattern(val name: String) : ImageMatcher, ImageScanner<Point> {
             if (!target.hasPoint(firstX, firstY)) return@walkToEnd
             if (target.getRGB(firstX, firstY) != firstColor) return@walkToEnd
 
-            currentPoint.move(x, y)
+            currentPoint.set(x, y)
             if (isAtImage(target, currentPoint, SweApplication.TRACE)) {
                 result += Point(x, y)
             }
@@ -114,8 +113,7 @@ open class ImagePattern(val name: String) : ImageMatcher, ImageScanner<Point> {
                 println("Dismatch Point Exact #${controlPoints.indexOf(this)} @ $name> "
                         + "x=${x + dismatchesDisplayOffset.x}, y=${y + dismatchesDisplayOffset.y}: "
                         + "Expected=${formatColor(controlColor.rgb)}, Actual=${formatColor(actualColor)}")
-                SweOverlay.addComponent(OverlayPixelPointer(
-                    MutablePoint(x, y).translate(dismatchesDisplayOffset).toAwt(), 5,
+                SweOverlay.addComponent(OverlayPixelPointer(Point(x, y) + dismatchesDisplayOffset, 5,
                     Color(CONTROL_POINT_EXACT_CROSS_COLOR)))
             }
 
@@ -138,8 +136,7 @@ open class ImagePattern(val name: String) : ImageMatcher, ImageScanner<Point> {
                 println("Dismatch Point Approx #${controlPoints.indexOf(this)} @ $name> "
                         + "x=${x + dismatchesDisplayOffset.x}, y=${y + dismatchesDisplayOffset.y}: "
                         + "Expected=${formatColor(controlColor.rgb)} +/- $APPROX_RGB_MAX_DIFFERENCE, Actual diff=$maxDifference")
-                SweOverlay.addComponent(OverlayPixelPointer(
-                    MutablePoint(x, y).translate(dismatchesDisplayOffset).toAwt(), 5,
+                SweOverlay.addComponent(OverlayPixelPointer(Point(x, y) + dismatchesDisplayOffset, 5,
                     Color(CONTROL_POINT_APPROX_CROSS_COLOR)))
             }
 
@@ -158,12 +155,9 @@ open class ImagePattern(val name: String) : ImageMatcher, ImageScanner<Point> {
             if (!testImage.hasPoint(startX, startY) || !testImage.hasPoint(endX, endY)) return false // out of bounds
 
             var isMatch = true
-            EntireImageWalker(controlImage.size).walk { x, y ->
-                if (controlImage.getRGB(x, y) != testImage.getRGB(startX + x, startY + y)) {
-                    isMatch = false
-                    return@walk false
-                }
-                return@walk true
+            controlImage.walkEntire { x, y, rgb ->
+                isMatch = rgb == testImage.getRGB(startX + x, startY + y)
+                isMatch
             }
 
             if (showDismatches && !isMatch) {

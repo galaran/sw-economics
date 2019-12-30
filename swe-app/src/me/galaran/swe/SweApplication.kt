@@ -1,11 +1,9 @@
 package me.galaran.swe
 
-import me.galaran.swe.capture.image.EntireImageWalker
 import me.galaran.swe.capture.Win32ForegroundWindowCapturer
-import me.galaran.swe.capture.image.size
 import me.galaran.swe.capture.window.UnknownWindow
 import me.galaran.swe.capture.window.Window
-import me.galaran.swe.capture.window.WindowScanner
+import me.galaran.swe.capture.window.WindowFinder
 import me.galaran.swe.overlay.OverlayRectangle
 import me.galaran.swe.overlay.SweOverlay
 import java.awt.image.BufferedImage
@@ -27,7 +25,7 @@ object SweApplication {
             val windowImage: BufferedImage = Win32ForegroundWindowCapturer.capture()?.image ?: continue
 
             val detectedWindows = SweOverlay.update {
-                val windows: List<UnknownWindow> = WindowScanner.findAt(windowImage, EntireImageWalker(windowImage.size))
+                val windows: List<UnknownWindow> = WindowFinder.findAt(windowImage)
                 val detectedWindows: List<Window> = windows.map { Window.detectType(it) ?: it }
 
                 detectedWindows

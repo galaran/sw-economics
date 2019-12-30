@@ -1,10 +1,16 @@
 package me.galaran.swe.capture.window
 
+import me.galaran.swe.SweApplication
 import me.galaran.swe.capture.image.Point
+import me.galaran.swe.capture.image.WindowTypePattern
+import me.galaran.swe.capture.image.getSubimage
+import me.galaran.swe.overlay.OverlayRectangle
+import me.galaran.swe.overlay.SweOverlay
 import java.awt.Color
+import java.awt.Rectangle
 import java.awt.image.BufferedImage
 
-sealed class Window(val posAtScreen: Point, val image: BufferedImage) {
+abstract class Window(val posAtScreen: Point, val image: BufferedImage) {
 
     constructor(prototype: UnknownWindow) : this(prototype.posAtScreen, prototype.image)
 
@@ -42,30 +48,26 @@ class UnknownWindow(posAtScreen: Point, image: BufferedImage) : Window(posAtScre
     override val frameColor = Color(200, 200, 200)
 }
 
-private interface WindowTypeMatcher<W : Window> {
+abstract class TitledWindow(prototype: UnknownWindow, titleRegion: Rectangle) : Window(prototype) {
+
+    val titleSubimage: BufferedImage = image.getSubimage(titleRegion)
+
+    lateinit var title: String
+
+    init {
+        if (SweApplication.DEBUG) {
+            SweOverlay.addComponent(
+                OverlayRectangle(xAtScreen + titleRegion.x, yAtScreen + titleRegion.y,
+                    titleRegion.width, titleRegion.height, WindowTypePattern.TITLE_RECTANGLE_COLOR, 1)
+            )
+        }
+    }
+}
+
+interface WindowTypeMatcher<W : Window> {
     fun tryMatch(win: UnknownWindow): W?
 }
 
 private val typeMatchers = listOf<WindowTypeMatcher<*>>(
     SellWindow.Matcher
 )
-
-class SellWindow private constructor(prototype: UnknownWindow) : Window(prototype) {
-
-    override val frameColor = Color(202, 109, 217)
-    override val properties: List<Pair<String, String?>> get() = listOf("sellerName" to sellerName)
-
-    var sellerName: String? = null
-
-    companion object Matcher : WindowTypeMatcher<SellWindow> {
-
-        private val sellWindowPattern = WindowTypePattern("sell")
-
-        override fun tryMatch(win: UnknownWindow): SellWindow? {
-            if (sellWindowPattern.isAtImage(win.image, Point.ZERO, true, win.posAtScreen)) {
-                return SellWindow(win).also { it.sellerName = "ХЗ" }
-            }
-            return null
-        }
-    }
-}

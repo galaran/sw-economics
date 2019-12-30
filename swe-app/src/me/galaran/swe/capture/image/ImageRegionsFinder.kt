@@ -3,7 +3,7 @@ package me.galaran.swe.capture.image
 import java.awt.Rectangle
 import java.awt.image.BufferedImage
 
-class ImageSubimageScanner(private val frameColor: Int) : ImageScanner<Rectangle> {
+class ImageRegionsFinder(private val frameColor: Int) : ImageScanner<Rectangle> {
 
     override fun findAt(target: BufferedImage, walker: ImageWalker): List<Rectangle> {
         val result = mutableListOf<Rectangle>()
@@ -11,7 +11,7 @@ class ImageSubimageScanner(private val frameColor: Int) : ImageScanner<Rectangle
         val ignoredPoints = mutableSetOf<Point>()
         val currentPoint = MutablePoint()
         walker.walkToEnd { x, y ->
-            currentPoint.move(x, y)
+            currentPoint.set(x, y)
             if (currentPoint in ignoredPoints) return@walkToEnd
 
             if (target.getRGB(x, y) != frameColor) return@walkToEnd

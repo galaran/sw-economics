@@ -4,5 +4,5 @@ import java.awt.image.BufferedImage
 
 interface ImageScanner<T> {
 
-    fun findAt(target: BufferedImage, walker: ImageWalker): List<T>
+    fun findAt(target: BufferedImage, walker: ImageWalker = EntireImageWalker(target.size)): List<T>
 }

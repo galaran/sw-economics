@@ -1,5 +1,6 @@
 package me.galaran.swe.overlay
 
+import me.galaran.swe.capture.image.Point
 import java.awt.*
 import java.awt.geom.Line2D
 
@@ -17,7 +18,7 @@ class OverlayRectangle(position: Point, private val dimension: Dimension, color:
     override fun drawOn(g2d: Graphics2D) {
         g2d.color = mainColor
         g2d.stroke = BasicStroke(strokeWidth.toFloat())
-        g2d.draw(Rectangle(position, dimension))
+        g2d.draw(Rectangle(position.toAwt(), dimension))
     }
 }
 
@@ -27,7 +28,7 @@ class OverlayFilledRectangle(position: Point, private val dimension: Dimension, 
 
     override fun drawOn(g2d: Graphics2D) {
         g2d.color = mainColor
-        g2d.fill(Rectangle(position, dimension))
+        g2d.fill(Rectangle(position.toAwt(), dimension))
     }
 }
 
@@ -36,7 +37,7 @@ class OverlayLine(pos1: Point, private val pos2: Point, private val width: Int, 
     override fun drawOn(g2d: Graphics2D) {
         g2d.color = mainColor
         g2d.stroke = BasicStroke(width.toFloat())
-        g2d.draw(Line2D.Float(position, pos2))
+        g2d.draw(Line2D.Float(position.toAwt(), pos2.toAwt()))
     }
 }
 
@@ -52,3 +53,5 @@ class OverlayPixelPointer(pixelPosition: Point, private val pointerLength: Int, 
         OverlayLine(Point(position.x + 1, position.y), Point(position.x + 1 + pointerLength, position.y), 1, mainColor).drawOn(g2d)
     }
 }
+
+private fun Point.toAwt() = java.awt.Point(x, y)

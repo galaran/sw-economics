@@ -4,7 +4,7 @@ import me.galaran.swe.SweApplication
 import me.galaran.swe.capture.image.*
 import java.awt.image.BufferedImage
 
-object WindowScanner : ImageScanner<Window> {
+object WindowFinder : ImageScanner<Window> {
 
     private val windowHeader = ImagePattern("window_header")
     private val windowTopRight = ImagePattern("window_top_right")
