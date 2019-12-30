@@ -1,7 +1,10 @@
 package me.galaran.swe.capture.image
 
+import java.awt.Color
 import java.awt.Dimension
 import java.awt.image.BufferedImage
+import kotlin.math.absoluteValue
+import kotlin.math.max
 
 
 open class Point(open val x: Int, open val y: Int) {
@@ -47,4 +50,11 @@ fun BufferedImage.copySubimage(x: Int, y: Int, w: Int, h: Int): BufferedImage {
         dispose()
     }
     return result
+}
+
+fun Color.maxRGBDifference(otherRGB: Int): Int {
+    val rDiff = (red - ((otherRGB shr 16) and 0xFF)).absoluteValue
+    val gDiff = (green - ((otherRGB shr 8) and 0xFF)).absoluteValue
+    val bDiff = (blue - (otherRGB and 0xFF)).absoluteValue
+    return max(rDiff, max(gDiff, bDiff))
 }
