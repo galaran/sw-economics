@@ -1,14 +1,13 @@
 package me.galaran.swe.capture.window
 
-import me.galaran.swe.capture.image.Point
-import me.galaran.swe.capture.image.WindowTypePattern
+import me.galaran.swe.capture.image.*
 import java.awt.Color
 import java.awt.Rectangle
 
 class SellWindow private constructor(prototype: UnknownWindow, titleRegion: Rectangle, slots: List<Rectangle>)
     : WindowWithSlots(prototype, titleRegion, slots) {
 
-    override val frameColor = Color(202, 109, 217)
+    override val frameColor = Color(202, 109, 217).fromAwt()
     override val properties: List<Pair<String, String?>> get() = listOf("sellerName" to sellerName)
 
     lateinit var sellerName: String

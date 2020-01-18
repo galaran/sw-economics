@@ -3,7 +3,7 @@ package me.galaran.swe.capture.image
 import java.awt.Rectangle
 import java.awt.image.BufferedImage
 
-class ImageRegionsFinder(private val frameColor: Int) : ImageScanner<Rectangle> {
+class ImageRegionsFinder(private val frameColor: ColorRGB) : ImageScanner<Rectangle> {
 
     override fun findAt(target: BufferedImage, walker: ImageWalker): List<Rectangle> {
         val result = mutableListOf<Rectangle>()
@@ -14,11 +14,11 @@ class ImageRegionsFinder(private val frameColor: Int) : ImageScanner<Rectangle> 
             currentPoint.set(x, y)
             if (currentPoint in ignoredPoints) return@walkToEnd
 
-            if (target.getRGB(x, y) != frameColor) return@walkToEnd
+            if (target.getRGB(x, y) != frameColor.value) return@walkToEnd
 
             var lastX: Int = x
             FromPointToDirectionWalker(target.size, x, y, WalkDirection.RIGHT).walk { subX, subY ->
-                if (target.getRGB(subX, subY) == frameColor) {
+                if (target.getRGB(subX, subY) == frameColor.value) {
                     ignoredPoints += Point(subX, subY)
                     true
                 } else {
@@ -30,7 +30,7 @@ class ImageRegionsFinder(private val frameColor: Int) : ImageScanner<Rectangle> 
 
             var lastY: Int = y
             FromPointToDirectionWalker(target.size, lastX, y, WalkDirection.DOWN).walk { subX, subY ->
-                if (target.getRGB(subX, subY) == frameColor) {
+                if (target.getRGB(subX, subY) == frameColor.value) {
                     ignoredPoints += Point(subX, subY)
                     true
                 } else {
@@ -42,7 +42,7 @@ class ImageRegionsFinder(private val frameColor: Int) : ImageScanner<Rectangle> 
 
             var restMatched = true
             val restMatcher: (Int, Int) -> Unit = { subX, subY ->
-                if (target.getRGB(subX, subY) == frameColor) {
+                if (target.getRGB(subX, subY) == frameColor.value) {
                     ignoredPoints += Point(subX, subY)
                 } else {
                     restMatched = false

@@ -50,13 +50,13 @@ fun BufferedImage.copySubimage(x: Int, y: Int, w: Int, h: Int): BufferedImage {
 
 fun BufferedImage.getSubimage(region: Rectangle): BufferedImage = getSubimage(region.x, region.y, region.width, region.height)
 
-inline fun BufferedImage.walkEntire(crossinline action: (x: Int, y: Int, rgb: Int) -> Boolean /* continue? */) {
-    EntireImageWalker(this.size).walk { x, y -> action(x, y, this.getRGB(x, y)) }
+inline fun BufferedImage.walkEntire(crossinline action: (x: Int, y: Int, rgb: ColorRGB) -> Boolean /* continue? */) {
+    EntireImageWalker(this.size).walk { x, y -> action(x, y, ColorRGB(this.getRGB(x, y))) }
 }
 
-fun Color.maxRGBDifference(otherRGB: Int): Int {
-    val rDiff = (red - ((otherRGB shr 16) and 0xFF)).absoluteValue
-    val gDiff = (green - ((otherRGB shr 8) and 0xFF)).absoluteValue
-    val bDiff = (blue - (otherRGB and 0xFF)).absoluteValue
+fun Color.maxRGBDifference(other: ColorRGB): Int {
+    val rDiff = (red - other.red).absoluteValue
+    val gDiff = (green - other.green).absoluteValue
+    val bDiff = (blue - other.blue).absoluteValue
     return max(rDiff, max(gDiff, bDiff))
 }

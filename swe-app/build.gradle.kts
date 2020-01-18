@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     application
     kotlin("jvm")
@@ -11,6 +13,11 @@ sourceSets["main"].resources.srcDir("resources")
 
 application {
     mainClassName = "me.galaran.swe.SweApplicationKt"
+}
+
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+    freeCompilerArgs = listOf("-XXLanguage:+InlineClasses")
 }
 
 dependencies {

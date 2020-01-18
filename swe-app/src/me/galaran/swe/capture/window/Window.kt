@@ -1,9 +1,7 @@
 package me.galaran.swe.capture.window
 
 import me.galaran.swe.SweApplication
-import me.galaran.swe.capture.image.Point
-import me.galaran.swe.capture.image.WindowTypePattern
-import me.galaran.swe.capture.image.getSubimage
+import me.galaran.swe.capture.image.*
 import me.galaran.swe.overlay.OverlayRectangle
 import me.galaran.swe.overlay.SweOverlay
 import java.awt.Color
@@ -19,7 +17,7 @@ abstract class Window(val posAtScreen: Point, val image: BufferedImage) {
     val width get() = image.width
     val height get() = image.height
 
-    abstract val frameColor: Color
+    abstract val frameColor: ColorRGB
 
     protected open val properties: List<Pair<String, String?>> get() = emptyList()
 
@@ -45,7 +43,7 @@ abstract class Window(val posAtScreen: Point, val image: BufferedImage) {
 }
 
 class UnknownWindow(posAtScreen: Point, image: BufferedImage) : Window(posAtScreen, image) {
-    override val frameColor = Color(200, 200, 200)
+    override val frameColor = Color(200, 200, 200).fromAwt()
 }
 
 abstract class TitledWindow(prototype: UnknownWindow, titleRegion: Rectangle) : Window(prototype) {
