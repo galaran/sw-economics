@@ -2,8 +2,8 @@ package me.galaran.swe.capture.window
 
 import me.galaran.swe.SweApplication
 import me.galaran.swe.capture.image.WindowTypePattern
+import me.galaran.swe.capture.image.fromAwt
 import me.galaran.swe.capture.image.getSubimage
-import me.galaran.swe.capture.image.maxRGBDifference
 import me.galaran.swe.capture.image.walkEntire
 import me.galaran.swe.overlay.OverlayRectangle
 import me.galaran.swe.overlay.SweOverlay
@@ -24,7 +24,7 @@ abstract class WindowWithSlots(prototype: UnknownWindow, titleRegion: Rectangle,
             val slotImage = image.getSubimage(slot)
             var slotEmpty = true
             slotImage.walkEntire { _, _, rgb ->
-                slotEmpty = Color.BLACK.maxRGBDifference(rgb) <= EMPTY_SLOT_MAX_DIFF_WITH_BLACK
+                slotEmpty = Color.BLACK.fromAwt().maxRGBDifference(rgb) <= EMPTY_SLOT_MAX_DIFF_WITH_BLACK
                 slotEmpty
             }
 

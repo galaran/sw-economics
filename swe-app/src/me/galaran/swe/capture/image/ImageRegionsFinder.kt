@@ -14,11 +14,11 @@ class ImageRegionsFinder(private val frameColor: ColorRGB) : ImageScanner<Rectan
             currentPoint.set(x, y)
             if (currentPoint in ignoredPoints) return@walkToEnd
 
-            if (target.getRGB(x, y) != frameColor.value) return@walkToEnd
+            if (target.getColor(x, y) != frameColor) return@walkToEnd
 
             var lastX: Int = x
             FromPointToDirectionWalker(target.size, x, y, WalkDirection.RIGHT).walk { subX, subY ->
-                if (target.getRGB(subX, subY) == frameColor.value) {
+                if (target.getColor(subX, subY) == frameColor) {
                     ignoredPoints += Point(subX, subY)
                     true
                 } else {
@@ -30,7 +30,7 @@ class ImageRegionsFinder(private val frameColor: ColorRGB) : ImageScanner<Rectan
 
             var lastY: Int = y
             FromPointToDirectionWalker(target.size, lastX, y, WalkDirection.DOWN).walk { subX, subY ->
-                if (target.getRGB(subX, subY) == frameColor.value) {
+                if (target.getColor(subX, subY) == frameColor) {
                     ignoredPoints += Point(subX, subY)
                     true
                 } else {
@@ -42,7 +42,7 @@ class ImageRegionsFinder(private val frameColor: ColorRGB) : ImageScanner<Rectan
 
             var restMatched = true
             val restMatcher: (Int, Int) -> Unit = { subX, subY ->
-                if (target.getRGB(subX, subY) == frameColor.value) {
+                if (target.getColor(subX, subY) == frameColor) {
                     ignoredPoints += Point(subX, subY)
                 } else {
                     restMatched = false

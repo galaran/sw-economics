@@ -64,5 +64,5 @@ fun BufferedImage.scaledCopy(scale: Int): BufferedImage {
 }
 
 inline fun BufferedImage.walkEntire(crossinline action: (x: Int, y: Int, rgb: ColorRGB) -> Boolean /* continue? */) {
-    EntireImageWalker(this.size).walk { x, y -> action(x, y, ColorRGB(this.getRGB(x, y))) }
+    EntireImageWalker(this.size).walk { x, y -> action(x, y, this.getColor(x, y)) }
 }

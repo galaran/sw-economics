@@ -31,9 +31,9 @@ open class ImagePattern(val name: String) : ImageMatcher, ImageScanner<Point> {
         val controlPoints = mutableListOf<ControlPoint>()
         EntireImageWalker(patternImage.size).walkToEnd { x, y ->
             if (patternImage.isCrossAround(x, y, CONTROL_POINT_EXACT_CROSS_COLOR)) {
-                controlPoints += ControlPointExact(Point(x, y) - zeroPoint, Color(patternImage.getRGB(x, y)))
+                controlPoints += ControlPointExact(Point(x, y) - zeroPoint, patternImage.getColor(x, y))
             } else if (patternImage.isCrossAround(x, y, CONTROL_POINT_APPROX_CROSS_COLOR)) {
-                controlPoints += ControlPointApprox(Point(x, y) - zeroPoint, Color(patternImage.getRGB(x, y)))
+                controlPoints += ControlPointApprox(Point(x, y) - zeroPoint, patternImage.getColor(x, y))
             }
         }
         this.controlPoints = controlPoints
@@ -66,13 +66,13 @@ open class ImagePattern(val name: String) : ImageMatcher, ImageScanner<Point> {
 
         val firstDx = controlPoints[0].point.x
         val firstDy = controlPoints[0].point.y
-        val firstColor: Int = controlPoints[0].controlColor.rgb
+        val firstColor: ColorRGB = controlPoints[0].controlColor
         val currentPoint = MutablePoint()
         walker.walkToEnd { x, y ->
             val firstX = x + firstDx
             val firstY = y + firstDy
             if (!target.hasPoint(firstX, firstY)) return@walkToEnd
-            if (target.getRGB(firstX, firstY) != firstColor) return@walkToEnd
+            if (target.getColor(firstX, firstY) != firstColor) return@walkToEnd
 
             currentPoint.set(x, y)
             if (isAtImage(target, currentPoint, SweApplication.TRACE)) {
@@ -93,12 +93,12 @@ open class ImagePattern(val name: String) : ImageMatcher, ImageScanner<Point> {
         }
     }
 
-    private abstract class ControlPoint(val point: Point /* relative to Zero point */, val controlColor: Color) : ImageMatcher {
+    private abstract class ControlPoint(val point: Point /* relative to Zero point */, val controlColor: ColorRGB) : ImageMatcher {
         operator fun component1() = point
         operator fun component2() = controlColor
     }
 
-    private inner class ControlPointExact(point: Point, exactColor: Color) : ControlPoint(point, exactColor) {
+    private inner class ControlPointExact(point: Point, exactColor: ColorRGB) : ControlPoint(point, exactColor) {
 
         override fun isAtImage(testImage: BufferedImage, zeroPointAtTestImage: Point,
                                showDismatches: Boolean, dismatchesDisplayOffset: Point): Boolean {
@@ -106,13 +106,13 @@ open class ImagePattern(val name: String) : ImageMatcher, ImageScanner<Point> {
             val y = zeroPointAtTestImage.y + point.y
             if (!testImage.hasPoint(x, y)) return false
 
-            val actualColor: Int = testImage.getRGB(x, y)
-            val isMatch = actualColor == controlColor.rgb
+            val actualColor: ColorRGB = testImage.getColor(x, y)
+            val isMatch = actualColor == controlColor
 
             if (showDismatches && !isMatch) {
                 println("Dismatch Point Exact #${controlPoints.indexOf(this)} @ $name> "
                         + "x=${x + dismatchesDisplayOffset.x}, y=${y + dismatchesDisplayOffset.y}: "
-                        + "Expected=${formatColor(controlColor.rgb)}, Actual=${formatColor(actualColor)}")
+                        + "Expected=$controlColor, Actual=$actualColor")
                 SweOverlay.addComponent(OverlayPixelPointer(Point(x, y) + dismatchesDisplayOffset, 5,
                     CONTROL_POINT_EXACT_CROSS_COLOR))
             }
@@ -121,7 +121,7 @@ open class ImagePattern(val name: String) : ImageMatcher, ImageScanner<Point> {
         }
     }
 
-    private inner class ControlPointApprox(point: Point, approxColor: Color) : ControlPoint(point, approxColor) {
+    private inner class ControlPointApprox(point: Point, approxColor: ColorRGB) : ControlPoint(point, approxColor) {
 
         override fun isAtImage(testImage: BufferedImage, zeroPointAtTestImage: Point,
                                showDismatches: Boolean, dismatchesDisplayOffset: Point): Boolean {
@@ -129,13 +129,13 @@ open class ImagePattern(val name: String) : ImageMatcher, ImageScanner<Point> {
             val y = zeroPointAtTestImage.y + point.y
             if (!testImage.hasPoint(x, y)) return false
 
-            val maxDifference: Int = controlColor.maxRGBDifference(ColorRGB(testImage.getRGB(x, y)))
+            val maxDifference: Int = controlColor.maxRGBDifference(testImage.getColor(x, y))
             val isMatch = maxDifference <= APPROX_RGB_MAX_DIFFERENCE
 
             if (showDismatches && !isMatch) {
                 println("Dismatch Point Approx #${controlPoints.indexOf(this)} @ $name> "
                         + "x=${x + dismatchesDisplayOffset.x}, y=${y + dismatchesDisplayOffset.y}: "
-                        + "Expected=${formatColor(controlColor.rgb)} +/- $APPROX_RGB_MAX_DIFFERENCE, Actual diff=$maxDifference")
+                        + "Expected=$controlColor +/- $APPROX_RGB_MAX_DIFFERENCE, Actual diff=$maxDifference")
                 SweOverlay.addComponent(OverlayPixelPointer(Point(x, y) + dismatchesDisplayOffset, 5,
                     CONTROL_POINT_APPROX_CROSS_COLOR))
             }
@@ -156,7 +156,7 @@ open class ImagePattern(val name: String) : ImageMatcher, ImageScanner<Point> {
 
             var isMatch = true
             controlImage.walkEntire { x, y, rgb ->
-                isMatch = rgb.value == testImage.getRGB(startX + x, startY + y)
+                isMatch = rgb == testImage.getColor(startX + x, startY + y)
                 isMatch
             }
 
@@ -176,8 +176,6 @@ open class ImagePattern(val name: String) : ImageMatcher, ImageScanner<Point> {
 
 private fun BufferedImage.isCrossAround(x: Int, y: Int, crossColor: ColorRGB): Boolean {
     return hasPoint(x - 1, y - 1) && hasPoint(x + 1, y + 1)
-            && getRGB(x - 1, y) == crossColor.value && getRGB(x + 1, y) == crossColor.value
-            && getRGB(x, y - 1) == crossColor.value && getRGB(x, y + 1) == crossColor.value
+            && getColor(x - 1, y) == crossColor && getColor(x + 1, y) == crossColor
+            && getColor(x, y - 1) == crossColor && getColor(x, y + 1) == crossColor
 }
-
-private fun formatColor(color: Int?): String = color?.let { Integer.toHexString(it).toUpperCase().substring(2) } ?: "null"
