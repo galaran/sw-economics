@@ -1,11 +1,8 @@
 package me.galaran.swe.capture.image
 
-import java.awt.Color
 import java.awt.Dimension
 import java.awt.Rectangle
 import java.awt.image.BufferedImage
-import kotlin.math.absoluteValue
-import kotlin.math.max
 
 
 open class Point(open val x: Int, open val y: Int) {
@@ -39,6 +36,8 @@ val BufferedImage.size get() = Dimension(width, height)
 
 fun BufferedImage.hasPoint(x: Int, y: Int) = x in 0 until width && y in 0 until height
 
+fun BufferedImage.getSubimage(region: Rectangle): BufferedImage = getSubimage(region.x, region.y, region.width, region.height)
+
 fun BufferedImage.copySubimage(x: Int, y: Int, w: Int, h: Int): BufferedImage {
     val result = BufferedImage(w, h, BufferedImage.TYPE_INT_RGB)
     with(result.createGraphics()) {
@@ -48,15 +47,22 @@ fun BufferedImage.copySubimage(x: Int, y: Int, w: Int, h: Int): BufferedImage {
     return result
 }
 
-fun BufferedImage.getSubimage(region: Rectangle): BufferedImage = getSubimage(region.x, region.y, region.width, region.height)
+fun BufferedImage.copy(): BufferedImage = copySubimage(0, 0, width, height)
+
+fun BufferedImage.scaledCopy(scale: Int): BufferedImage {
+    require(scale >= 2)
+    val result = BufferedImage(width * scale, height * scale, BufferedImage.TYPE_INT_RGB)
+    walkEntire { x, y, rgb ->
+        for (ix in 0 until scale) {
+            for (iy in 0 until scale) {
+                result.setRGB(x * scale + ix, y * scale + iy, rgb.value)
+            }
+        }
+        true
+    }
+    return result
+}
 
 inline fun BufferedImage.walkEntire(crossinline action: (x: Int, y: Int, rgb: ColorRGB) -> Boolean /* continue? */) {
     EntireImageWalker(this.size).walk { x, y -> action(x, y, ColorRGB(this.getRGB(x, y))) }
-}
-
-fun Color.maxRGBDifference(other: ColorRGB): Int {
-    val rDiff = (red - other.red).absoluteValue
-    val gDiff = (green - other.green).absoluteValue
-    val bDiff = (blue - other.blue).absoluteValue
-    return max(rDiff, max(gDiff, bDiff))
 }
